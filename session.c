@@ -3,8 +3,10 @@
 #include <pthread.h>
 #include <assert.h>
 #include <openssl/rand.h>
+#include <arpa/inet.h>
 
 #include "session.h"
+#include "registry.h"
 #include "cipher.h"
 #include "atomic.h"
 #include "log.h"
@@ -105,6 +107,8 @@ session_ref_dec(estp_session_t* session)
 static void
 session_free(estp_session_t* session)
 {
+    char ipstr[INET_ADDRSTRLEN];
+
     if (session->client_cipher) {
         cipher_free(session->client_cipher);
         session->client_cipher = NULL;
@@ -120,6 +124,10 @@ session_free(estp_session_t* session)
         session->sid %= num_sessions;
     else
         session->sid += num_sessions;
+
+    if (!estp_registry_del(session->client_addr))
+        LOGX("hello thread: unable to delete '%s' from registry", 
+             inet_ntop(AF_INET, &session->client_addr, ipstr, sizeof(ipstr)));
 }
 
 estp_session_t*

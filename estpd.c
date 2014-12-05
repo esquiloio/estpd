@@ -896,6 +896,10 @@ main(int argc, char* argv[])
     if (!estp_session_init(config.sessions, config.server_addr, config.netmask))
         ERRX("unable to initialize sessions");
 
+    // Initialize the registry interface
+    if (!estp_registry_init())
+        ERRX("unable to initialize registry");
+
     // Start tx threads
     if (pthread_create(&tid, NULL, tx_thread, &params) != 0)
         ERR("pthread create");
