@@ -11,7 +11,7 @@
 #define CLIENT_SOCKET_PATH "/var/run/estpd/estpd_client.socket"
 
 #define TYPE_LEN 3
-#define MAC_ADDRSTRLEN 17
+#define MAX_NAME_LEN 20
 
 static int sock = -1;
 static struct sockaddr_un server_address;
@@ -68,13 +68,20 @@ estp_registry_shutdown()
 bool
 estp_registry_add(in_addr_t address, const char* name)
 {
-    char buffer[TYPE_LEN + MAC_ADDRSTRLEN + INET_ADDRSTRLEN + 3]; // 3 = 2 separators + null termination
+	size_t name_len;
+
+    char buffer[TYPE_LEN + MAX_NAME_LEN + INET_ADDRSTRLEN + 3]; // 3 = 2 comma separators + null termination
     strncpy(buffer, "add,", TYPE_LEN + 1); 
 
-    strncpy(&buffer[TYPE_LEN + 1], name, MAC_ADDRSTRLEN);
-    buffer[TYPE_LEN + 1 + MAC_ADDRSTRLEN] = ',';
-    inet_ntop(AF_INET, &address, &buffer[TYPE_LEN + 1 + MAC_ADDRSTRLEN + 1],
-              sizeof(buffer) - (TYPE_LEN + 1 + MAC_ADDRSTRLEN + 1));
+    name_len = strlen(name);
+    if (name_len > MAX_NAME_LEN)
+    	name_len = MAX_NAME_LEN;
+
+    strncpy(&buffer[TYPE_LEN + 1], name, name_len);
+
+    buffer[TYPE_LEN + 1 + name_len] = ',';
+    inet_ntop(AF_INET, &address, &buffer[TYPE_LEN + 1 + name_len + 1],
+              sizeof(buffer) - (TYPE_LEN + 1 + name_len + 1));
     buffer[sizeof(buffer) - 1] = '\0';
 
     return send_message(buffer);

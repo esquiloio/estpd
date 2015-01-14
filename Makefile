@@ -6,7 +6,7 @@ LD 		= gcc
 LDFLAGS = -lssl -lcrypto -lpthread
 
 estpd: $(OBJS)
-	$(LD) $(LDFLAGS) -o $@ $^
+	$(LD) $^ $(LDFLAGS) -o $@
 
 clean:
 	rm -f $(OBJS)
