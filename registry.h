@@ -12,8 +12,10 @@ void
 estp_registry_shutdown();
 
 bool
-estp_registry_add(in_addr_t address, const char* name);
+estp_registry_add(in_addr_t client_address, const char* name);
 
 bool
-estp_registry_del(in_addr_t address);
+estp_registry_del(in_addr_t client_address);
 
+bool
+estp_registry_peer(in_addr_t client_address, in_addr_t peer_address);

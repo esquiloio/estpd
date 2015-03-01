@@ -576,9 +576,10 @@ rx_packet(int dgramfd, int tunfd)
     ATOMIC_INC(session->rx_packets);
 
     // Save the peer address if it is not set
-    if (!session->peer_addr.sin.sin_addr.s_addr)
+    if (!session->peer_addr.sin.sin_addr.s_addr) {
         session->peer_addr = from_addr;
-
+        estp_registry_peer(session->client_addr, session->peer_addr.sin.sin_addr.s_addr);
+    }
     switch (packet.header.type) {
         case ESTP_TYPE_KEEPALIVE: {
             break;

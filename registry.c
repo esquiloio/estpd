@@ -66,9 +66,9 @@ estp_registry_shutdown()
 }
 
 bool
-estp_registry_add(in_addr_t address, const char* name)
+estp_registry_add(in_addr_t client_address, const char* name)
 {
-	size_t name_len;
+    size_t name_len;
 
     char buffer[TYPE_LEN + MAX_NAME_LEN + INET_ADDRSTRLEN + 3]; // 3 = 2 comma separators + null termination
     strncpy(buffer, "add,", TYPE_LEN + 1); 
@@ -80,22 +80,46 @@ estp_registry_add(in_addr_t address, const char* name)
     strncpy(&buffer[TYPE_LEN + 1], name, name_len);
 
     buffer[TYPE_LEN + 1 + name_len] = ',';
-    inet_ntop(AF_INET, &address, &buffer[TYPE_LEN + 1 + name_len + 1],
+    inet_ntop(AF_INET, &client_address, &buffer[TYPE_LEN + 1 + name_len + 1],
               sizeof(buffer) - (TYPE_LEN + 1 + name_len + 1));
+
     buffer[sizeof(buffer) - 1] = '\0';
 
     return send_message(buffer);
 }
 
 bool
-estp_registry_del(in_addr_t address)
+estp_registry_del(in_addr_t client_address)
 {
-    char buffer[TYPE_LEN + INET_ADDRSTRLEN + 3]; // 3 = 2 separators + null termination
-    strncpy(buffer, "del,,", TYPE_LEN + 2); 
+    char buffer[TYPE_LEN + INET_ADDRSTRLEN + 2]; // 2 = 1 separators + null termination
+    strncpy(buffer, "del,", TYPE_LEN + 2); 
 
-    inet_ntop(AF_INET, &address, &buffer[TYPE_LEN + 2],
-              sizeof(buffer) - (TYPE_LEN + 2));
+    inet_ntop(AF_INET, &client_address, &buffer[TYPE_LEN + 1],
+              sizeof(buffer) - (TYPE_LEN + 1));
+
     buffer[sizeof(buffer) - 1] = '\0';
 
     return send_message(buffer);
 }
+
+bool
+estp_registry_peer(in_addr_t client_address, in_addr_t peer_address)
+{
+    size_t message_len;
+
+    char buffer[TYPE_LEN + 2*INET_ADDRSTRLEN + 3]; // 3 = 2 comma separators + null termination
+    strncpy(buffer, "ext,", TYPE_LEN + 1); 
+
+    inet_ntop(AF_INET, &client_address, &buffer[TYPE_LEN + 1],
+              sizeof(buffer) - (TYPE_LEN + 1));
+
+    message_len = strlen(buffer);
+    buffer[message_len++] = ',';
+    inet_ntop(AF_INET, &peer_address, &buffer[message_len],
+              sizeof(buffer) - message_len);
+
+    buffer[sizeof(buffer) - 1] = '\0';
+
+    return send_message(buffer);
+}
+
